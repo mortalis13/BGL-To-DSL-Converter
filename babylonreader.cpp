@@ -29,13 +29,13 @@ bool BabylonReader::addHeadword(string word, string def, vector<string> alternat
 bool BabylonReader::convert() {
   // --- Read
   bool res = m_babylon->open();
-  if(!res) {
+  if (!res) {
     printf("Error openning %s\n", m_babylon->filename().c_str());
     return false;
   }
-  
-  res = m_babylon->read();
-  
+
+  m_babylon->read();
+
   printf("numEntries: %d\n", m_babylon->numEntries());
   printf("title: %s\n", m_babylon->title().c_str());
   printf("sourceLang: %s\n", m_babylon->sourceLang().c_str());
@@ -43,26 +43,28 @@ bool BabylonReader::convert() {
   printf("defaultCharset: %s\n", m_babylon->defaultCharset().c_str());
   printf("sourceCharset: %s\n", m_babylon->sourceCharset().c_str());
   printf("targetCharset: %s\n", m_babylon->targetCharset().c_str());
-  
-  
+
   // --- Process
   fstream f(m_outFile, ios::out);
   if (!f.is_open()) {
     printf("File open ERROR\n");
     return false;
   }
-  
+
   f << "#NAME \"" << m_babylon->title() << "\"" << endl;
   f << "#INDEX_LANGUAGE \"" << m_babylon->sourceLang() << "\"" << endl;
   f << "#CONTENTS_LANGUAGE \"" << m_babylon->targetLang() << "\"" << endl << endl;
-  
+
+  m_babylon->close();
+  m_babylon->open();
+
   bgl_entry entry;
-  
+
   while (true) {
     entry = m_babylon->readEntry();
     if (entry.end) break;
     if (entry.headword.length() == 0 || entry.definition.length() == 0) continue;
-    
+
     string alts = "";
     for (auto alt: entry.alternates) {
       alts += alt + "\n";

@@ -76,7 +76,7 @@ bool Babylon::readBlock(bgl_block &block) {
     block.data = (char *) malloc(block.length);
     int n = gzread(file, block.data, block.length);
   }
-  
+
   return true;
 }
 
@@ -104,7 +104,7 @@ bool Babylon::read() {
   while (readBlock(block)) {
     headword.clear();
     definition.clear();
-    
+
     if (block.type == 0) {
       if (block.data[0] == 0x08) {
         // !! crashes on type > bgl_charset.size()
@@ -119,7 +119,7 @@ bool Babylon::read() {
     }
     else if (block.type == 3) {
       string value = "";
-      
+
       if (block.data[1] == 0x01) {
         for (int i=2; i<block.length; i++) value += block.data[i];
         m_title = value;
@@ -143,7 +143,7 @@ bool Babylon::read() {
         else log("ERROR: Unknown target charset");
       }
     }
-    
+
     if (block.length) free(block.data);
   }
   gzseek(file, 0, SEEK_SET);
@@ -153,7 +153,7 @@ bool Babylon::read() {
   convertToUtf8(m_email, DEFAULT_CHARSET);
   convertToUtf8(m_copyright, DEFAULT_CHARSET);
   convertToUtf8(m_description, DEFAULT_CHARSET);
-  
+
   return true;
 }
 
@@ -172,11 +172,11 @@ bgl_entry Babylon::readEntry() {
   string definition;
   vector<string> alternates;
   string alternate;
-  
+
   while (readBlock(block)) {
     if (block.type == 1 || block.type == 10) {
       logd("\n\n..block.type: %d", block.type);
-      
+
       alternate.clear();
       headword.clear();
       definition.clear();
@@ -186,7 +186,7 @@ bgl_entry Babylon::readEntry() {
       len = 0;
       len = (unsigned char)block.data[pos++];
       headword.reserve(len);
-      
+
       for (uint a = 0; a < len; a++) {
         if (Utils::isControlChar(block.data[pos])) {
           pos++;
@@ -195,20 +195,20 @@ bgl_entry Babylon::readEntry() {
           headword += block.data[pos++];
         }
       }
-      
+
       headword = Utils::stripDollar(headword);
       convertToUtf8(headword, SOURCE_CHARSET);
-      
-      
+
+
       // == Definition
       len = 0;
       len = (unsigned char)block.data[pos++] << 8;
       len |= (unsigned char)block.data[pos++];
       definition.reserve(len);
-      
+
       uint def_pos = pos;
       bool fieldsStarted = false;
-      
+
       for (uint a = 0; a < len; a++) {
         if (block.data[pos] == 0x0a) {
           definition += '\n';
@@ -227,7 +227,7 @@ bgl_entry Babylon::readEntry() {
           definition += block.data[pos++];
         }
       }
-      
+
       if (fieldsStarted) {
         string defPartOfSpeech = "";
         string defTitle = "";
@@ -235,7 +235,7 @@ bgl_entry Babylon::readEntry() {
         string defTrans50 = "";
         string defTrans60 = "";
         logd("..[1]: %d, %d, %d", pos, len, block.length);
-        
+
         while (pos - def_pos < len) {
           logd("pos: %d", pos);
           if (block.data[pos] == 0x02) {
@@ -256,20 +256,20 @@ bgl_entry Babylon::readEntry() {
             logd("..0x13 field");
             int data_len = (unsigned char) block.data[pos+1];
             pos += 2;
-            
+
             if (data_len == 0) continue;
             if (data_len < 0) {log("ERROR: length < 0"); break;}
-            
+
             pos += data_len;
           }
           else if (block.data[pos] == 0x18) {
             logd("..Title field");
             int data_len = (unsigned char) block.data[pos+1];
             pos += 2;
-            
+
             if (data_len == 0) continue;
             if (data_len < 0) {log("ERROR: length < 0"); break;}
-            
+
             if (data_len > 0 && (pos - def_pos + data_len <= len)) {
               defTitle = string(block.data + pos, block.data + pos + data_len);
             }
@@ -279,10 +279,10 @@ bgl_entry Babylon::readEntry() {
             logd("..0x1a field");
             int data_len = (unsigned char) block.data[pos+1];
             pos += 2;
-            
+
             if (data_len == 0) continue;
             if (data_len < 0) {log("ERROR: length < 0"); break;}
-            
+
             pos += data_len;
           }
           else if (block.data[pos] == 0x28) {
@@ -290,10 +290,10 @@ bgl_entry Babylon::readEntry() {
             pos++;
             int data_len = ((unsigned char) block.data[pos] << 8) + (unsigned char) block.data[pos+1];
             pos += 2;
-            
+
             if (data_len == 0) continue;
             if (data_len < 0) {log("ERROR: length < 0"); break;}
-            
+
             if (data_len > 0 && pos - def_pos + data_len <= len) {
               defTitleTrans = string(block.data + pos, block.data + pos + data_len);
             }
@@ -310,15 +310,15 @@ bgl_entry Babylon::readEntry() {
             int code = block.data[pos+1];
             int data_len = (unsigned char) block.data[pos+2];
             pos += 3;
-            
+
             if (data_len == 0) continue;
             if (data_len < 0) {log("ERROR: length < 0"); break;}
-            
+
             if (data_len > 0 && pos - def_pos + data_len <= len) {
               defTrans50 = string(block.data + pos, block.data + pos + data_len);
             }
             pos += data_len;
-            
+
             logd("pos: %d, data_len: %d, trans: %s", pos, data_len, defTrans50.c_str());
           }
           else if (block.data[pos] == 0x60) {
@@ -327,10 +327,10 @@ bgl_entry Babylon::readEntry() {
             pos += 2;
             int data_len = ((unsigned char) block.data[pos] << 8) + (unsigned char) block.data[pos+1];
             pos += 2;
-            
+
             if (data_len == 0) continue;
             if (data_len < 0) {log("ERROR: length < 0"); break;}
-            
+
             if (data_len > 0 && pos - def_pos + data_len <= len) {
               defTrans60 = string(block.data + pos, block.data + pos + data_len);
             }
@@ -346,7 +346,7 @@ bgl_entry Babylon::readEntry() {
             return entry;
           }
         }
-        
+
         string definition_format = "";
         if (defPartOfSpeech.size() > 0) {
           logd("..defPartOfSpeech: %s", defPartOfSpeech.c_str());
@@ -368,17 +368,16 @@ bgl_entry Babylon::readEntry() {
           logd("..defTrans60: %s", defTrans60.c_str());
           definition_format += "[" + defTrans60 + "]" + "<br>";
         }
-        
+
         definition = definition_format + definition;
       }
-      
+
       // convertToUtf8(definition, TARGET_CHARSET);
       convertToUtf8(definition, DEFAULT_CHARSET);       // CP1252, converts some chars better than ISO-8859-1
-      
+
       definition = Utils::convertHtmlEntities(definition);
       definition = Utils::decodeCharsetTags(definition);
       definition = Utils::html_to_dsl(definition);
-      
 
       // == Alternate forms
       while (pos < block.length) {
