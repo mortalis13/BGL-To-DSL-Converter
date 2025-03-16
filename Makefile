@@ -16,7 +16,7 @@ $(PR): $(OBJ)
 	g++ -g $^ -o $@ $(LDFLAGS)
 
 %.o: %.cpp $(HEADERS)
-	g++ -o $@ $(CPPFLAGS) -c $<
+	g++ -o $@ -g $(CPPFLAGS) -c $<
 
 clean:
 	del /Q /S *.o *.exe
