@@ -8,7 +8,7 @@
 
 using namespace std;
 
-#define VERSION "1.0.0"
+#define VERSION "1.1.0"
 
 void convert_bgl_to_dsl(char* dict_path) {
   string filename(dict_path);
