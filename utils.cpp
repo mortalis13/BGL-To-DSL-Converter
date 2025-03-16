@@ -318,7 +318,7 @@ namespace Utils {
               conv_buf = res;
             }
             else {
-              printf("WARNING: HTML entity code > 255: %d [0x%x]\n", codeVal, codeVal);
+              printf("WARNING: HTML entity code > 255: %ld [0x%lx]\n", codeVal, codeVal);
               buf_len = codePointToUtf(codeVal, buf);
             }
             
@@ -540,51 +540,4 @@ namespace Utils {
     return text;
   }
   
-  
-  // OLD
-  string stripDollarIndexes(const string& word) {
-    int i = 0;
-    string result = "";
-
-    while (true) {
-      int d0 = word.find("$", i);
-      if (d0 == string::npos) {
-        result += word.substr(i);
-        break;
-      }
-      
-      int d1 = word.find("$", d0+1);
-      if (d1 == string::npos) {
-        result += word.substr(i);
-        break;
-      }
-      
-      if (d1 == d0+1) {
-        result += word.substr(i, d0-i);
-        i = d1 + 1;
-        while (i < word.size() && word[i] == '$') {
-          i += 1;
-        }
-        if (i >= word.size()) break;
-        continue;
-      }
-      
-      string s1 = word.substr(d0+1, d1-d0-1);
-      string res = regex_replace(s1, regex("\\d"), "");
-      if (res.size() > 0) {
-        result += word.substr(i, d1-i);
-        i = d1;
-        continue;
-      }
-      
-      if (d1+1 < word.size() && word[d1+1] != 0x20)
-        printf("Utils::stripDollarIndexes(%s): second $ is followed by non-space\n", word.c_str());
-      
-      result += word.substr(i, d0-i);
-      i = d1+1;
-    }
-    
-    return result;
-  }
-
 }

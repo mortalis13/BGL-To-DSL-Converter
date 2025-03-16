@@ -89,8 +89,6 @@ namespace Utils {
   string decodeCharsetTags(const string& inText);
   string html_to_dsl(const string& inText);
   
-  string stripDollarIndexes(const string& word);
-  
 }
 
 #endif
