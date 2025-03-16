@@ -21,28 +21,34 @@
 #ifndef BABYLONREADER_H
 #define BABYLONREADER_H
 
-#include "dictreader.h"
 #include "babylon.h"
 
 #include <string>
+#include <map>
 
-class DictBuilder;
+using namespace std;
 
-/**
-@author Raul Fernandes
- */
-class BabylonReader : public DictReader
-{
+class BabylonReader {
+
   public:
-    BabylonReader( std::string filename, DictBuilder *builder );
-    //~BabylonReader();
+    BabylonReader(string filename, string outFile);
     bool convert();
-    inline DictBuilder* product() const { return m_builder; };
-    inline std::string filename() const { return m_babylon->filename(); };
+
+    inline string filename() const {return m_babylon->filename();};
 
   protected:
-    DictBuilder *m_builder;
+    struct entry {
+      unsigned long position;
+      unsigned long size;
+    };
+
     Babylon *m_babylon;
+
+    string m_outFile;
+
+    unsigned int m_entriescount;
+    string m_definition;
+
 };
 
 #endif // BABYLONREADER_H
